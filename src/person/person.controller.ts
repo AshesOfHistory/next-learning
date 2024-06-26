@@ -1,15 +1,53 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+/*
+ * @Author: 沧澜
+ * @Date: 2024-06-26 10:20:58
+ * @LastEditors: 沧澜
+ * @LastEditTime: 2024-06-26 14:40:56
+ * @Description:
+ */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseInterceptors,
+  UploadedFiles,
+} from '@nestjs/common';
 import { PersonService } from './person.service';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 
-@Controller('person')
+@Controller('api/person')
 export class PersonController {
   constructor(private readonly personService: PersonService) {}
 
+  // @Post()
+  // create(@Body() createPersonDto: CreatePersonDto) {
+  //   return this.personService.create(createPersonDto);
+  // }
+
   @Post()
-  create(@Body() createPersonDto: CreatePersonDto) {
-    return this.personService.create(createPersonDto);
+  body(@Body() createPersonDto: CreatePersonDto) {
+    return `received: ${JSON.stringify(createPersonDto)}`;
+  }
+
+  @Post('file')
+  @UseInterceptors(
+    AnyFilesInterceptor({
+      dest: 'uploads/',
+    }),
+  )
+  body2(
+    @Body() createPersonDto: CreatePersonDto,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    console.log(files);
+    return `received: ${JSON.stringify(createPersonDto)}`;
   }
 
   @Get()
@@ -17,9 +55,19 @@ export class PersonController {
     return this.personService.findAll();
   }
 
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.personService.findOne(+id);
+  // }
+
+  @Get('find')
+  query(@Query('name') name: string, @Query('age') age: number) {
+    return `received: name=${name},age=${age}`;
+  }
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.personService.findOne(+id);
+  urlParam(@Param('id') id: string) {
+    return `received: id=${id}`;
   }
 
   @Patch(':id')
